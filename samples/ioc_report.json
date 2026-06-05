@@ -1,0 +1,425 @@
+{
+  "generated_at": "2026-06-05T02:20:01.738999",
+  "project": "Honeypot Distribué Intelligent — IDS SSH avec IA",
+  "authors": [
+    "Anibar Taha",
+    "Mahamat Emma Aboubakar"
+  ],
+  "institution": "EMSI Casablanca — 4CIRA G2 — 2025/2026",
+  "statistics": {
+    "total_sessions": 658,
+    "total_auth_attempts": 708,
+    "total_commands": 53,
+    "unique_ips": 20,
+    "ips_bloquees": 3,
+    "faux_positifs": 0
+  },
+  "top_ips": [
+    {
+      "ip": "127.0.0.1",
+      "connexions": 379
+    },
+    {
+      "ip": "192.168.11.189",
+      "connexions": 145
+    },
+    {
+      "ip": "192.168.11.139",
+      "connexions": 55
+    },
+    {
+      "ip": "10.188.107.148",
+      "connexions": 16
+    },
+    {
+      "ip": "123.206.176.183",
+      "connexions": 10
+    },
+    {
+      "ip": "192.168.11.183",
+      "connexions": 8
+    },
+    {
+      "ip": "192.168.172.1",
+      "connexions": 5
+    },
+    {
+      "ip": "113.31.119.122",
+      "connexions": 5
+    },
+    {
+      "ip": "42.192.142.125",
+      "connexions": 5
+    },
+    {
+      "ip": "92.118.36.7",
+      "connexions": 4
+    },
+    {
+      "ip": "45.227.255.205",
+      "connexions": 4
+    },
+    {
+      "ip": "49.234.209.4",
+      "connexions": 4
+    },
+    {
+      "ip": "122.51.137.21",
+      "connexions": 4
+    },
+    {
+      "ip": "49.234.30.113",
+      "connexions": 4
+    },
+    {
+      "ip": "81.70.193.181",
+      "connexions": 4
+    },
+    {
+      "ip": "45.227.255.163",
+      "connexions": 2
+    },
+    {
+      "ip": "104.248.243.178",
+      "connexions": 1
+    },
+    {
+      "ip": "45.148.10.50",
+      "connexions": 1
+    },
+    {
+      "ip": "91.241.19.38",
+      "connexions": 1
+    },
+    {
+      "ip": "222.102.125.143",
+      "connexions": 1
+    }
+  ],
+  "top_credentials": [
+    {
+      "credential": "root:root",
+      "count": 56
+    },
+    {
+      "credential": "root:password",
+      "count": 56
+    },
+    {
+      "credential": "root:123456",
+      "count": 56
+    },
+    {
+      "credential": "root:admin",
+      "count": 55
+    },
+    {
+      "credential": "root:123456 ",
+      "count": 21
+    },
+    {
+      "credential": "root:admin ",
+      "count": 21
+    },
+    {
+      "credential": "root:password ",
+      "count": 21
+    },
+    {
+      "credential": "root:root ",
+      "count": 20
+    },
+    {
+      "credential": "root:root:invalid_123",
+      "count": 9
+    },
+    {
+      "credential": "root:service:incorrect",
+      "count": 9
+    },
+    {
+      "credential": "root:user:access_denied",
+      "count": 9
+    },
+    {
+      "credential": "root:ubuntu:wrong_try",
+      "count": 9
+    },
+    {
+      "credential": "root:test:login_fail_1",
+      "count": 9
+    },
+    {
+      "credential": "root:admin:guess_45",
+      "count": 9
+    },
+    {
+      "credential": "root:guest:not_allowed",
+      "count": 9
+    },
+    {
+      "credential": "root:root:fail_login",
+      "count": 9
+    },
+    {
+      "credential": "root:backup:bad_pass",
+      "count": 9
+    },
+    {
+      "credential": "root:admin:wrong_pass_01",
+      "count": 9
+    },
+    {
+      "credential": "cowrie:jfkf",
+      "count": 8
+    },
+    {
+      "credential": "cowrie:cowriepass",
+      "count": 5
+    }
+  ],
+  "top_commands": [
+    {
+      "command": "ls",
+      "count": 14
+    },
+    {
+      "command": "pwd",
+      "count": 7
+    },
+    {
+      "command": "",
+      "count": 6
+    },
+    {
+      "command": "exit",
+      "count": 5
+    },
+    {
+      "command": "whoami",
+      "count": 2
+    },
+    {
+      "command": "cd etc",
+      "count": 2
+    },
+    {
+      "command": "hhh",
+      "count": 2
+    },
+    {
+      "command": "cat /ect/passwd",
+      "count": 1
+    },
+    {
+      "command": "cat /etc/passwd",
+      "count": 1
+    },
+    {
+      "command": "choami",
+      "count": 1
+    },
+    {
+      "command": "cd .",
+      "count": 1
+    },
+    {
+      "command": "cd ..",
+      "count": 1
+    },
+    {
+      "command": "echo 1 >test.txt",
+      "count": 1
+    },
+    {
+      "command": "rm test.txt ",
+      "count": 1
+    },
+    {
+      "command": "echo 1 > ttt.txt",
+      "count": 1
+    },
+    {
+      "command": "rm -r ttt.txt",
+      "count": 1
+    },
+    {
+      "command": "nnb",
+      "count": 1
+    },
+    {
+      "command": "ssh root@127.0.0.1",
+      "count": 1
+    },
+    {
+      "command": "ju",
+      "count": 1
+    },
+    {
+      "command": "jkk",
+      "count": 1
+    }
+  ],
+  "blocked_ips": [
+    {
+      "ip": "192.168.11.139",
+      "derniere_mise_a_jour": "2026-05-09 19:11:38.833000",
+      "nb_tentatives": 120,
+      "score": 81.47
+    },
+    {
+      "ip": "192.168.11.189",
+      "derniere_mise_a_jour": "2026-05-10 02:19:02.072000",
+      "nb_tentatives": 56,
+      "score": 75.0
+    },
+    {
+      "ip": "127.0.0.1",
+      "derniere_mise_a_jour": "2026-05-22 16:03:28.626000",
+      "nb_tentatives": 20,
+      "score": 75.0
+    }
+  ],
+  "ai_decisions": [
+    {
+      "timestamp": "2026-05-22T16:03:57.322000",
+      "ip": "127.0.0.1",
+      "score_rf": 75.0,
+      "decision": "BLOQUER",
+      "raisonnement": "Score RF 75/100 — decision automatique basee sur le modele ML."
+    },
+    {
+      "timestamp": "2026-05-16T19:34:44.031000",
+      "ip": "127.0.0.1",
+      "score_rf": 55.14,
+      "decision": "SURVEILLER",
+      "raisonnement": "Score RF 55/100 — decision automatique basee sur le modele ML."
+    },
+    {
+      "timestamp": "2026-05-16T19:28:37.159000",
+      "ip": "127.0.0.1",
+      "score_rf": 55.14,
+      "decision": "SURVEILLER",
+      "raisonnement": "Score RF 55/100 — decision automatique basee sur le modele ML."
+    },
+    {
+      "timestamp": "2026-05-16T19:22:15.183000",
+      "ip": "127.0.0.1",
+      "score_rf": 55.14,
+      "decision": "SURVEILLER",
+      "raisonnement": "Score RF 55/100 — decision automatique basee sur le modele ML."
+    },
+    {
+      "timestamp": "2026-05-16T19:15:58.295000",
+      "ip": "127.0.0.1",
+      "score_rf": 55.14,
+      "decision": "SURVEILLER",
+      "raisonnement": "Score RF 55/100 — decision automatique basee sur le modele ML."
+    },
+    {
+      "timestamp": "2026-05-16T19:09:40.459000",
+      "ip": "127.0.0.1",
+      "score_rf": 55.14,
+      "decision": "SURVEILLER",
+      "raisonnement": "Score RF 55/100 — decision automatique basee sur le modele ML."
+    },
+    {
+      "timestamp": "2026-05-16T19:03:08.225000",
+      "ip": "127.0.0.1",
+      "score_rf": 55.14,
+      "decision": "SURVEILLER",
+      "raisonnement": "Score RF 55/100 — decision automatique basee sur le modele ML."
+    },
+    {
+      "timestamp": "2026-05-16T18:56:52.831000",
+      "ip": "127.0.0.1",
+      "score_rf": 55.14,
+      "decision": "SURVEILLER",
+      "raisonnement": "Score RF 55/100 — decision automatique basee sur le modele ML."
+    },
+    {
+      "timestamp": "2026-05-16T18:50:31.486000",
+      "ip": "127.0.0.1",
+      "score_rf": 55.14,
+      "decision": "SURVEILLER",
+      "raisonnement": "Score RF 55/100 — decision automatique basee sur le modele ML."
+    },
+    {
+      "timestamp": "2026-05-16T18:43:51.462000",
+      "ip": "127.0.0.1",
+      "score_rf": 55.14,
+      "decision": "SURVEILLER",
+      "raisonnement": "Score RF 55/100 — decision automatique basee sur le modele ML."
+    },
+    {
+      "timestamp": "2026-05-16T18:37:40.955000",
+      "ip": "127.0.0.1",
+      "score_rf": 53.71,
+      "decision": "SURVEILLER",
+      "raisonnement": "Score RF 53/100 — decision automatique basee sur le modele ML."
+    },
+    {
+      "timestamp": "2026-05-15T16:34:28.966000",
+      "ip": "10.188.107.148",
+      "score_rf": 31.3,
+      "decision": "SURVEILLER",
+      "raisonnement": "Score RF 31/100 — decision automatique basee sur le modele ML."
+    },
+    {
+      "timestamp": "2026-05-10T02:28:28.147000",
+      "ip": "192.168.11.183",
+      "score_rf": 31.4,
+      "decision": "SURVEILLER",
+      "raisonnement": "Score RF 31/100 — decision automatique basee sur le modele ML."
+    },
+    {
+      "timestamp": "2026-05-10T02:19:02.076000",
+      "ip": "192.168.11.189",
+      "score_rf": 75.0,
+      "decision": "BLOQUER",
+      "raisonnement": "Score RF 75/100 — decision automatique basee sur le modele ML."
+    },
+    {
+      "timestamp": "2026-05-10T01:31:20.716000",
+      "ip": "192.168.11.189",
+      "score_rf": 46.34,
+      "decision": "SURVEILLER",
+      "raisonnement": "Score RF 46/100 — decision automatique basee sur le modele ML."
+    },
+    {
+      "timestamp": "2026-05-10T01:25:29.057000",
+      "ip": "192.168.11.189",
+      "score_rf": 61.15,
+      "decision": "SURVEILLER",
+      "raisonnement": "Score RF 61/100 — decision automatique basee sur le modele ML."
+    },
+    {
+      "timestamp": "2026-05-10T01:19:27.100000",
+      "ip": "192.168.11.189",
+      "score_rf": 61.15,
+      "decision": "SURVEILLER",
+      "raisonnement": "Score RF 61/100 — decision automatique basee sur le modele ML."
+    },
+    {
+      "timestamp": "2026-05-10T01:13:18.257000",
+      "ip": "192.168.11.189",
+      "score_rf": 61.15,
+      "decision": "SURVEILLER",
+      "raisonnement": "Score RF 61/100 — decision automatique basee sur le modele ML."
+    },
+    {
+      "timestamp": "2026-05-10T01:07:15.534000",
+      "ip": "192.168.11.189",
+      "score_rf": 61.15,
+      "decision": "SURVEILLER",
+      "raisonnement": "Score RF 61/100 — decision automatique basee sur le modele ML."
+    },
+    {
+      "timestamp": "2026-05-10T01:01:06.867000",
+      "ip": "192.168.11.189",
+      "score_rf": 61.15,
+      "decision": "SURVEILLER",
+      "raisonnement": "Score RF 61/100 — decision automatique basee sur le modele ML."
+    }
+  ]
+}

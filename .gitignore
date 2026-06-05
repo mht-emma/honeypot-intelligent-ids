@@ -1,0 +1,23 @@
+```text
+# Environnements Virtuels & Systèmes d'exploitation
+cowrie-env/
+venv/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+
+# Fichiers de données volumineux et modèles ML
+*.pkl
+*.log
+dataset/
+*.zip
+*.gz
+
+# Secrets et Variables d'Environnement
+.env
+config.private.json
+
+# Exception : Nous forçons le maintien des fichiers d'analyses textuels
+!docs/ia_logs_sample.txt
