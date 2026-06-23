@@ -1,113 +1,249 @@
-# 🍯 Honeypot Distribué Intelligent — IDS SSH avec IA
+# 🐝 CyberHive
 
-**Projet de Fin de Module — Gestion des Intrusions** **EMSI Casablanca — 4ème année Cybersécurité & Infrastructures Réseaux (4CIRA G2)** **Auteurs : Anibar Taha & Mahamat Emma Aboubakar | Encadrant : Pr. Ennaji Mohammed | 2025-2026**
+Système intelligent de détection et de réponse aux attaques SSH, basé sur un honeypot et l'intelligence artificielle.
+
+**Projet de Fin d'Année — Filière Cybersécurité et Infrastructure Réseau (4IIR)**
+**EMSI Casablanca — Année universitaire 2025-2026**
+
+Réalisé par **Taha Anibar** & **Mahammat Emma Aboubakar**
+Encadrant pédagogique : **M. Chiba**
 
 ---
 
 ## 📌 Description
 
-Infrastructure complète de détection et de prévention d'intrusions SSH combinant un honeypot Cowrie, une persistance MongoDB, un double module d'Intelligence Artificielle (Scoring via Machine Learning Random Forest + contextualisation métier via un LLM local), et une stack de supervision Grafana couplée à des alertes de remédiations instantanées.
+CyberHive est une infrastructure distribuée de détection et de blocage automatique des intrusions SSH, pensée pour les PME marocaines qui n'ont ni le budget ni l'équipe pour s'offrir un SOC managé classique.
 
-Le système capture à la volée les flux SSH compromis, extrait les features comportementales clés, calcule un niveau de criticité dynamique, applique des politiques de blocage fermes via nftables sur notre passerelle pare-feu dédiée et notifie l'équipe de sécurité en temps réel.
+Le système combine :
+
+- un **honeypot SSH (Cowrie)** qui piège l'attaquant et capture sa session en détail ;
+- un **module d'intelligence artificielle à deux étages** — un classifieur Random Forest qui calcule un score de criticité comportementale, et un LLM local (Ollama / Llama 3.2) qui traduit ce score en explication lisible pour un opérateur ;
+- un **pare-feu programmable (nftables)** qui isole l'IP attaquante dès que le score dépasse un seuil critique ;
+- une **restitution multicanal** : tableau de bord Grafana, bot Telegram (« Jarvis »), interface web d'administration.
+
+Le système ne distingue pas un trafic « légitime » d'un trafic « malveillant » au sens classique : toute connexion au honeypot est par construction suspecte. Le rôle du modèle est d'évaluer la sévérité du comportement observé, pour décider si l'attaquant doit être bloqué immédiatement ou simplement surveillé.
 
 ---
 
-## 🏗️ Architecture Technique
+## 🏗️ Architecture technique
 
-```text
-Internet / VM Kali (Attaquant)
-         ↓
-VM Firewall (nftables + API REST Python :5002)
-         ↓ DNAT Règle : Port 22 → Cowrie Port 2222
-VM Cowrie (Honeypot + Stack Analytique Interne)
-├── Cowrie SSH Honeypot      :2222
-├── MongoDB 7.0 (Persistance) :27017
-├── Module IA Daemon         (systemd Core Unit)
-│   ├── Random Forest Classifier (model.pkl)
-│   └── LLM Local Llama3.2 1B    (Ollama Engine)
-├── API Grafana (Flask Bridge) :5000
-├── Admin Chat LLM Interface :5001
-└── Grafana Dashboard Visual :3000
-         ↓
-Telegram Bot API (Alerte instantanée sur détection d'anomalies de criticité haute)
+```
+Internet / VM Kali (attaquant)
+        │  SSH :22
+        ▼
+VM Firewall — nftables + API REST Flask (:5002, auth par token)
+        │  DNAT : port 22 → port 2222
+        ▼
+VM Cowrie — Honeypot + stack analytique
+ ├─ Cowrie SSH Honeypot          :2222
+ ├─ MongoDB 7.0 (persistance)    :27017
+ ├─ Daemon IA (cycle 30s)
+ │   ├─ Random Forest (model.pkl) — scoring 0-100
+ │   └─ Ollama / Llama 3.2 (1B)  — explication en langage naturel
+ ├─ API Flask → Grafana          :5000
+ ├─ API Flask → Chat admin       :5001
+ └─ Grafana (dashboard)          :3000
+        │
+        ▼
+Telegram Bot « Jarvis » — alerte si score > 70
+
+VM SSH légitime (port 2224) — accès admin réel, hors chemin du honeypot
 ```
 
-## 🛠️ Stack Technologique
+Les 4 machines virtuelles (Ubuntu 22.04) sont interconnectées via un réseau privé chiffré **ZeroTier**, ce qui évite d'avoir à gérer des tunnels SSH manuels entre elles.
 
-| Composant | Technologie | Rôle Fonctionnel |
-|-----------|-------------|------------------|
-| **Honeypot Core** | Cowrie 2.x (Git Stack) | Émulation SSH interactive, capture de TTY logs |
-| **Persistence Layer** | MongoDB 7.0 | Entreposage structuré des logs bruts & métriques de l'IA |
-| **Machine Learning** | Scikit-Learn Random Forest | Classification binaire et calcul du score de risque [0-100] |
-| **Local LLM Orchestrator** | Ollama Engine + Llama3.2 1B | Génération automatisée des analyses de décisions en français |
-| **Data Visualization** | Grafana 10.x Stack | Tableaux de bord de supervision cyber en temps réel |
-| **Application Layer** | Flask Python REST API | Passerelle de routage de données MongoDB → Grafana |
-| **Interactive Shell** | Flask + Ollama API | Console d'administration en langage naturel (Chatbot) |
-| **Instant Alerting** | Telegram Bot Platform | Notification de blocage de vecteurs d'attaques aux admins |
-| **Packet Filtering** | Nftables Engine (VM Dédiée) | Isolation logique et bannissement IP temps réel |
-| **Overlay Network** | ZeroTier Mesh | Tunneling chiffré et interconnexion des VMs d'infrastructure |
+> ℹ️ Le score de risque est recalculé toutes les 30 secondes pour chaque IP active. Une fois le seuil de 70/100 dépassé, la propagation de la règle de blocage vers nftables prend moins de 3 secondes. En pire cas (détection juste après un cycle de scoring), le délai total entre la première intrusion et le blocage effectif peut atteindre ~50 secondes.
 
-## 📊 Principales Fonctionnalités
+---
 
-* **Capture & Analyse Passive :** Réception transparente des flux SSH (Sessions, Authentifications, Saisie de commandes, Flux binaires).
-* **Évaluation Cognitive (ML) :** Traitement analytique périodique (toutes les 30 secondes) des sessions suspectes par Random Forest.
-* **Interprétation Humaine (LLM) :** Traduction des arbres de décision mathématiques en explications textuelles exploitables par un opérateur SOC.
-* **Mitigation Active :** Bannissement dynamique sur le pare-feu dès qu'une IP franchit le seuil critique de score `> 70/100`.
-* **Interface Conversationnelle :** Gestion simplifiée de l'infrastructure via Chat (Whitelisting, levée de faux positifs, états du système).
+## 🛠️ Stack technique
 
+| Composant | Technologie | Rôle |
+|---|---|---|
+| Honeypot | Cowrie (installé depuis les sources Git) | Émulation SSH interactive, capture des sessions et des TTY logs |
+| Conteneurisation | Docker | Isolation du honeypot par rapport à l'hôte |
+| Persistance | MongoDB 7.0 | Stockage des sessions, authentifications, commandes, ttylogs |
+| Machine learning | scikit-learn — Random Forest (200 estimateurs) | Scoring comportemental [0-100] |
+| LLM local | Ollama + Llama 3.2 (1B) | Génération d'explications en langage naturel, 100 % local |
+| API / backend | Flask (Python) | Endpoints REST : pare-feu, alimentation Grafana, chat admin |
+| Pare-feu | nftables | DNAT + liste de blocage dynamique, sur VM dédiée |
+| Supervision | Grafana 10.x | Tableaux de bord temps réel (dashboard exporté en JSON) |
+| Alerting | API Telegram Bot (« Jarvis ») | Notifications instantanées |
+| Réseau | ZeroTier | Réseau privé virtuel chiffré entre les 4 VMs |
+| Tests d'intrusion | Kali Linux — Hydra, Nmap | Génération de trafic d'attaque contrôlé pour validation |
 
+---
 
+## 📊 Fonctionnalités principales
 
-## 🗂️ Structure du Répertoire Git
+- Capture passive des sessions SSH (authentification, commandes saisies, flux binaires de terminal).
+- Évaluation comportementale périodique (cycle de 30 s) plutôt qu'une analyse événement par événement.
+- Explication en langage naturel des décisions de scoring, via le module LLM local.
+- Blocage automatique au niveau noyau dès que le score dépasse 70/100.
+- Interface conversationnelle d'administration : whitelist, levée de faux positifs, état du système.
+- Génération de rapports d'IOC (indicateurs de compromission) à partir des sessions capturées.
 
-```text
-honeypot-intelligent-ids/
+---
+
+## 🗂️ Structure du dépôt
+
+```
+cyberhive/
 ├── cowrie/
-│   └── cowrie.cfg              ← Configuration et durcissement du honeypot
+│   └── cowrie.cfg                 ← configuration et durcissement du honeypot
 ├── grafana/
-│   └── cowrie-ids-dashboard.json ← Configuration exportée du dashboard (Dashboard-as-Code)
+│   └── cowrie-ids-dashboard.json  ← dashboard exporté (dashboard-as-code)
 ├── ia/
-│   ├── daemon.py               ← Boucle d'analyse daemonisée (30s)
-│   ├── features.py             ← Pipeline d'extraction des métriques MongoDB
-│   ├── scorer.py               ← Moteur d'inférence Random Forest
-│   ├── llm.py                  ← Intégration Ollama & Prompt Engineering
-│   ├── telegram_alert.py       ← Notifications push SecOps
-│   ├── train_model.py          ← Script de réentraînement du modèle prédictif
-│   └── generate_dataset.py     ← Script synthétique de labellisation de données
+│   ├── daemon.py                  ← boucle d'analyse (cycle 30 s)
+│   ├── features.py                ← extraction des variables comportementales depuis MongoDB
+│   ├── scorer.py                  ← inférence Random Forest
+│   ├── llm.py                     ← intégration Ollama / prompt engineering
+│   ├── telegram_alert.py          ← notifications vers le bot Jarvis
+│   ├── train_model.py             ← (ré)entraînement du modèle
+│   └── generate_dataset.py        ← génération du jeu de données d'entraînement
 ├── scripts/
-│   ├── grafana_api.py          ← Endpoint d'alimentation Grafana (:5000)
-│   ├── chat.py                 ← Backend de la console conversationnelle (:5001)
-│   ├── firewall_api.py         ← API d'écoute sur la VM de filtrage (:5002)
-│   └── ioc_extractor.py        ← Générateur automatique de rapports d'IOCs
+│   ├── grafana_api.py             ← endpoint d'alimentation Grafana (:5000)
+│   ├── chat.py                    ← backend de la console conversationnelle (:5001)
+│   ├── firewall_api.py            ← API du pare-feu, sur la VM dédiée (:5002)
+│   └── ioc_extractor.py           ← génération des rapports d'IOC
 ├── samples/
-│   ├── cowrie_sample.json      ← Données brutes de sessions anonymisées
-│   └── ioc_report.json         ← Rapport d'indicateurs de compromission final
+│   ├── cowrie_sample.json         ← sessions anonymisées, à titre d'exemple
+│   └── ioc_report.json            ← rapport d'IOC généré
 └── docs/
-    ├── .gitignore              ← Exclusion des logs locaux et variables d'environnement
-    ├── ia_logs_sample.txt      ← Échantillon des sorties d'analyse IA
-    ├── mongodb_schema.md       ← Spécifications détaillées des collections
-    └── screenshots/            ← Preuves d'exécution et de validation visuelle
-
+    ├── mongodb_schema.md          ← schéma des collections MongoDB
+    ├── ia_logs_sample.txt         ← exemple de sortie du module IA
+    └── screenshots/               ← captures d'écran de validation
 ```
-## 📈 Métriques d'Exploitation Réelles
 
-*Consulter directement `/samples/ioc_report.json` pour obtenir l'état volumétrique à jour.*
+> 📝 **État réel de la documentation** (à la date de rédaction de ce README) : seuls ce README et `docs/mongodb_schema.md` constituent une documentation à jour. Un guide d'installation détaillé, une documentation formelle de l'API pare-feu et un journal des bugs structuré sont prévus mais pas encore rédigés en tant que documents séparés — la section Installation ci-dessous fait office de guide de démarrage en attendant.
 
-* **Précision Algorithmique (Random Forest) :** `99.9%` (F1-Score mesuré en environnement de test contrôlé).
-* **Latence de Traitement (Infection → Règle Firewall) :** `~50 secondes` au maximum (Temps d'échantillonnage + calculs itératifs inclus).
+---
 
+## ⚙️ Installation
 
-## 📸 Captures d'Écran (Validation SOC)
+### Prérequis
 
-### 1. Vue d'ensemble du Dashboard Grafana
-![Grafana Dashboard](docs/screenshots/grafana_dashboard1.png)
-### 2. Suivi des Risques IA et États de Blocage
-![Grafana Dashboard IP Status](docs/screenshots/grafana_dashboard2.png)
-### 3. Alertes de remédiation en temps réel sur Telegram
-![Telegram Alerts](docs/screenshots/telegram_alert1.jpeg)
+- 4 machines virtuelles Ubuntu 22.04 (ou équivalent), reliées par un réseau ZeroTier commun
+- Python 3.8+ sur la VM Cowrie
+- Docker sur la VM Cowrie (pour le conteneur honeypot)
+- Accès root sur la VM Firewall (pour nftables)
+- Un token de bot Telegram et l'identifiant du chat de destination
 
-![Telegram Alerts](docs/screenshots/telegram_alert2.jpeg)
-### 4. Interface de discussion administrateur (LLM)
-![Admin Chat](docs/screenshots/admin_chat1.png)
+### 1. Réseau ZeroTier
 
-![Admin Chat](docs/screenshots/admin_chat2.png)
+```bash
+curl -s https://install.zerotier.com | sudo bash
+sudo zerotier-cli join <NETWORK_ID>
+# autoriser chaque VM depuis my.zerotier.com, puis vérifier :
+zerotier-cli listpeers
+```
+
+### 2. VM Cowrie — honeypot
+
+```bash
+git clone https://github.com/cowrie/cowrie.git
+cd cowrie
+python3 -m venv cowrie-env
+source cowrie-env/bin/activate
+pip install -r requirements.txt
+cp ../cyberhive/cowrie/cowrie.cfg etc/cowrie.cfg
+bin/cowrie start
+```
+
+### 3. MongoDB
+
+```bash
+sudo apt install -y mongodb-org
+sudo systemctl enable --now mongod
+# créer la base et l'utilisateur applicatif dédié avant de lancer le daemon IA
+```
+
+### 4. Module IA
+
+```bash
+cd cyberhive/ia
+python3 -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+
+# installer Ollama et récupérer le modèle local
+curl -fsSL https://ollama.com/install.sh | sh
+ollama pull llama3.2:1b
+
+python3 train_model.py     # entraîne et sérialise le modèle (model.pkl)
+python3 daemon.py          # lance la boucle d'analyse (cycle 30 s)
+```
+
+### 5. APIs Flask (Grafana, chat admin, pare-feu)
+
+```bash
+# sur la VM Cowrie
+python3 scripts/grafana_api.py     # :5000
+python3 scripts/chat.py            # :5001
+
+# sur la VM Firewall (privilèges restreints via sudoers à la commande nft uniquement)
+python3 scripts/firewall_api.py    # :5002
+```
+
+### 6. Grafana
+
+```bash
+sudo apt install -y grafana
+sudo systemctl enable --now grafana-server
+# importer grafana/cowrie-ids-dashboard.json depuis l'interface web (:3000)
+# configurer la source de données JSON pointant vers l'API :5000
+```
+
+### 7. Alertes Telegram
+
+```bash
+export TELEGRAM_BOT_TOKEN="<token>"
+export TELEGRAM_CHAT_ID="<chat_id>"
+```
+
+### 8. Pare-feu (VM Firewall)
+
+```bash
+sudo nft add table inet filter
+sudo nft add set inet filter blocklist '{ type ipv4_addr; }'
+sudo nft add chain inet filter input '{ type filter hook input priority 0; }'
+sudo nft add rule inet filter input ip saddr @blocklist drop
+```
+
+---
+
+## 📸 Captures d'écran
+
+Les captures de validation de l'environnement de production SOC sont répertoriées ci-dessous :
+
+1. Vue d'ensemble du tableau de bord Grafana
+2. Suivi des scores de risque et des IP bloquées
+3. Alertes Telegram (bot Jarvis) reçues en temps réel
+4. Interface de chat administrateur (LLM)
+
+---
+
+## 🧪 Tests
+
+La validation fonctionnelle repose sur des scénarios d'attaque simulés depuis une VM Kali (Hydra pour la force brute SSH, Nmap pour le scan), ainsi que sur des tests unitaires des fonctions de scoring. Le détail des cas de test, des résultats obtenus et des deux bugs corrigés en cours de développement (sérialisation binaire MongoDB côté Cowrie, absence de connecteur Grafana-MongoDB stable) est documenté dans le rapport de PFA, chapitre Réalisation et Implémentation.
+
+---
+
+## 🗺️ Roadmap
+
+- **V1 (en cours)** — MVP : honeypot, scoring IA, blocage automatique, dashboard, alertes. Livraison visée : 30 juin 2026.
+- **V2** — Validation terrain auprès de PME pilotes, migration vers un hébergement cloud en production, mise en conformité réglementaire (CNDP), premiers clients payants.
+- **V3** — Extension géographique, montée en gamme Enterprise, distribution via des partenaires IT locaux.
+
+---
+
+## 👥 Auteurs
+
+- **Taha Anibar** — lead technique, infrastructure et pare-feu
+- **Mahammat Emma Aboubakar** — module IA, intégration et tests
+- Encadrant pédagogique : **M. Chiba** — EMSI Casablanca
+
+---
+
+## 📄 Licence
+
+Projet académique réalisé dans le cadre d'un Projet de Fin d'Année à l'EMSI Casablanca. Licence à définir avant toute diffusion publique du dépôt.
